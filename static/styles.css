@@ -1,0 +1,90 @@
+body {
+    background-color: #000000;
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    margin: 0;
+}
+h1 {
+    color: #a41111;
+    font-size: 2.5rem;
+}
+.scrambled-word {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #919191;
+}
+.input-box {
+    width: 40px;
+    height: 40px;
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 5px;
+    border: 2px solid #919191;
+    border-radius: 1px;
+    background-color: black;
+    color: white;
+}
+
+.correct {
+    background-color: #90EE90;  /* Light green */
+}
+
+.incorrect {
+    background-color: #ec8c8b;  /* Light red */
+}
+
+.input-box:focus {
+    border-color: #57a65b;
+    outline: none;
+}
+button {
+    background-color: #57a65b;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+button:hover {
+    background-color: #57a65b;
+}
+.success-message {
+    font-size: 1.5rem;
+    color: #57a65b;
+    margin-top: 20px;
+}
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+button {
+    font-size: 1rem;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background-color: #57a65b;
+    color: white;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #45a049;
+}
+
+.correct {
+    color: green;
+    font-weight: bold;
+}
+
+.incorrect {
+    color: gray;
+}

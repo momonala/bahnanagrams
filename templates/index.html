@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="static/styles.css" />
+        <title>Bahnanagrams</title>
+    </head>
+    <body>
+        <h1>Bahnanagrams</h1>
+        <div class="scrambled-word" id="scrambled-word">
+            anagram: {{ anagram }}
+        </div>
+
+        <form method="POST">
+            {% for i in range(anagram|length) %}
+            <input
+                type="text"
+                name="letter_{{ i }}"
+                class="input-box"
+                maxlength="1"
+                oninput="moveFocus(this); updateAnagramColors()"
+                onkeydown="handleBackspace(event, this); handleEnter(event)"
+                {%  if success %}  disabled {%  endif  %}
+                value="{{ request.form['letter_' ~ loop.index0] if request.form['letter_' ~ loop.index0] else '' }}"
+            />
+            {% endfor %}
+            <br />
+            <br />
+            <button type="submit" name="action" value="previous">Previous</button>
+            <button type="submit" name="action" value="submit">Submit</button>
+            <button type="submit" name="action" value="next">Next</button>
+        </form>
+
+        {# confetti and message if success#}
+        {% if success %}
+        <p class="success-message">🍌🚂 You solved this Bahnanagram! 🚂🍌</p>
+        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+        <script>
+            // Trigger confetti after success
+            confetti({
+                particleCount: 200,
+                spread: 70,
+                origin: { y: 0.6 },
+            });
+        </script>
+        {% endif %}
+
+        <script>
+            // Move focus to the next input after a letter is entered
+            function moveFocus(currentInput) {
+                if (currentInput.value.length === 1 && currentInput.nextElementSibling) {
+                    currentInput.nextElementSibling.focus();
+                }
+            }
+
+            // Move focus to the previous input when backspace is pressed
+            function handleBackspace(event, currentInput) {
+                if (event.key === "Backspace" && currentInput.value === "") {
+                    if (currentInput.previousElementSibling) {
+                        currentInput.previousElementSibling.focus();
+                    }
+                }
+            }
+
+            // Prevent Enter from moving focus to the next field, only submit
+            function handleEnter(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    document.querySelector('button[value="submit"]').click();
+                }
+            }
+
+            // update anagram and text colors when corret or wrong letters typed
+            function updateAnagramColors() {
+                const inputs = document.querySelectorAll(".input-box");
+                const anagramDiv = document.getElementById("scrambled-word");
+                const anagramText = "{{ anagram }}"; // Original anagram
+                let updatedText = "";
+
+                // Track typed letters and their counts
+                let typedLetters = [];
+                inputs.forEach((input) => {
+                    if (input.value) {
+                        typedLetters.push(input.value); // Add the typed letter to the array
+                    }
+                });
+
+                // Create an array to track how many times each letter in the anagram has been turned green
+                let letterCount = {};
+
+                // Now build the new anagram display
+                for (let i = 0; i < anagramText.length; i++) {
+                    let letter = anagramText[i];
+
+                    // Check if the current letter has been typed
+                    if (typedLetters.includes(letter)) {
+                        // Ensure that each letter is only colored green once per occurrence in the anagram
+                        if (!letterCount[letter]) {
+                            letterCount[letter] = 0;
+                        }
+
+                        // Only color green if this letter hasn't been fully matched yet
+                        if (letterCount[letter] < typedLetters.filter((t) => t === letter).length) {
+                            updatedText += `<span style="color: #57a65b">${letter}</span>`;
+                            letterCount[letter]++;
+                        } else {
+                            updatedText += `<span style="color: #919191">${letter}</span>`;
+                        }
+                    } else {
+                        updatedText += `<span style="color: #919191">${letter}</span>`;
+                    }
+                }
+
+                // Update the displayed anagram
+                anagramDiv.innerHTML = "anagram: " + updatedText;
+
+                // Update input box colors
+                inputs.forEach((input, index) => {
+                    let letter = anagramText[index];
+                    let inputValue = input.value;
+
+                    if (inputValue && inputValue === letter) {
+                        // Correct letter, turn input background green
+                        {#input.classList.add("correct");#}
+                        input.classList.remove("incorrect");
+                    } else if (inputValue && !anagramText.includes(inputValue)) {
+                        // Incorrect letter (not in the anagram), turn input background red
+                        input.classList.add("incorrect");
+                        input.classList.remove("correct");
+                    } else {
+                        // If the input is empty, remove both styles
+                        input.classList.remove("correct", "incorrect");
+                    }
+                });
+            }
+        </script>
+    </body>
+</html>
