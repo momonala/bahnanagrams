@@ -12,7 +12,7 @@
             anagram: {{ anagram }}
         </div>
 
-        <form method="POST">
+        <form method="POST" action="/{{ index }}">
             {% for i in range(anagram|length) %}
             <input
                 type="text"
@@ -21,18 +21,26 @@
                 maxlength="1"
                 oninput="moveFocus(this); updateAnagramColors()"
                 onkeydown="handleBackspace(event, this); handleEnter(event)"
-                {%  if success %}  disabled {%  endif  %}
+                {% if success %} disabled {% endif %}
                 value="{{ request.form['letter_' ~ loop.index0] if request.form['letter_' ~ loop.index0] else '' }}"
             />
             {% endfor %}
             <br />
             <br />
-            <button type="submit" name="action" value="previous">Previous</button>
+            <button type="button"
+                onclick="window.location.href='{{ url_for('anagram_page', index=(index - 1) % length) }}'">
+                Previous
+            </button>
+
             <button type="submit" name="action" value="submit">Submit</button>
-            <button type="submit" name="action" value="next">Next</button>
+
+            <button type="button"
+                onclick="window.location.href='{{ url_for('anagram_page', index=(index + 1) % length) }}'">
+                Next
+            </button>
         </form>
 
-        {# confetti and message if success#}
+        {# confetti and message if success #}
         {% if success %}
         <p class="success-message">🍌🚂 You solved this Bahnanagram! 🚂🍌</p>
         <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
