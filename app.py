@@ -1,6 +1,6 @@
 import logging
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request
 
 from ubahn import df
 
@@ -18,7 +18,7 @@ solved = []
 @app.route("/<int:index>", methods=["GET", "POST"])
 def anagram_page(index):
     # Get current word and scrambled anagram
-    word = anagrams["Station"].iloc[index]
+    word = anagrams["Station"].iloc[index].replace(" ", "")
     anagram = word  # Assuming no scrambling for simplicity
 
     # Handle form submission
@@ -26,8 +26,6 @@ def anagram_page(index):
         user_input = ''.join([request.form.get(f"letter_{i}", "") for i in range(len(word))]).lower()
         if user_input == word.lower():
             solved.append(index)
-            return render_template("index.html", anagram=anagram, success=True, index=index, length=len(anagrams))
-
     if index in solved:
         return render_template("index.html", anagram=anagram, success=True, index=index, length=len(anagrams))
 

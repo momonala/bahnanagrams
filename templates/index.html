@@ -11,7 +11,7 @@
 
         <!-- Anagram display -->
         <div class="scrambled-word" id="scrambled-word">
-            anagram: {{ anagram }}
+            anagram {{ index }}/ {{ length }}: {{ anagram }}
         </div>
 
         <!-- Form for letter input and navigation buttons -->
@@ -36,25 +36,38 @@
             {% endfor %}
             <br />
             <br />
-            <button type="button"
-                onclick="window.location.href='{{ url_for('anagram_page', index=(index - 1) % length) }}'">
-                Previous
-            </button>
 
-            <button type="submit" name="action" value="submit">Submit</button>
+            <!-- Buttons for previous, submit, and next -->
+            <div class="button-container">
+                <button type="button"
+                    onclick="window.location.href='{{ url_for('anagram_page', index=(index - 1) % length) }}'">
+                    Previous
+                </button>
 
-            <button type="button"
-                onclick="window.location.href='{{ url_for('anagram_page', index=(index + 1) % length) }}'">
-                Next
-            </button>
+                <button type="submit" name="action" value="submit">Submit</button>
+
+                <button type="button"
+                    onclick="window.location.href='{{ url_for('anagram_page', index=(index + 1) % length) }}'">
+                    Next
+                </button>
+
+                <!-- Difficulty Toggle (Switch) -->
+                <div class="switch-container" style="margin-top: 20px;">
+                    <label class="switch">
+                        <input checked type="checkbox" id="difficulty-toggle" onchange="toggleDifficulty()" data-difficulty="easy">
+                        <span class="slider round"></span>
+                    </label>
+                    <span id="difficulty-label" class="switch-label">👹 Hard mode</span>
+                </div>
+            </div>
         </form>
 
+{#        // Trigger confetti and message after success (placeholder to not shift text when displayed)#}
         <div id="success-container" style="height: 40px;">
             {% if success %}
-                <p class="success-message">🍌🚂 You solved this Bahnanagram! 🚂🍌</p>
+                <p class="success-message">🚂🍌 You solved this Bahnanagram! 🍌🚂</p>
                 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
                 <script>
-                    // Trigger confetti after success
                     confetti({
                         particleCount: 200,
                         spread: 70,
@@ -89,12 +102,22 @@
                     document.querySelector('button[value="submit"]').click();
                 }
             }
+            // Toggle difficulty setting (easy or hard)
+            function toggleDifficulty() {
+                const difficultyToggle = document.getElementById("difficulty-toggle");
+                const difficultyLabel = document.getElementById("difficulty-label");
+
+                if (difficultyToggle.checked) {
+                    difficultyLabel.innerHTML = "👹 Hard mode";
+                } else {
+                    difficultyLabel.innerHTML = "😀 Easy mode";
+                }
+            }
 
             // update anagram and text colors when correct or wrong letters are typed
             const success = {{ success | tojson }};
-            console.log("Success Flag:", success);  // Debugging to check if it's correctly passed
+            // Call this function after page load to ensure it's applied after form re-render
             window.onload = function() {
-                // Call this function after page load to ensure it's applied after form re-render
                 updateAnagramColors();
             }
 
@@ -102,13 +125,16 @@
                 const inputs = document.querySelectorAll(".input-box");
                 const anagramDiv = document.getElementById("scrambled-word");
                 const anagramText = "{{ anagram }}"; // Original anagram
+                const index = "{{ index }}";
+                const length = "{{ length }}";
+                const hardMode = document.querySelector("input[type='checkbox']").checked; // Check if easy mode is enabled
                 let updatedText = "";
 
-                // Track typed letters and their counts
+                // Track typed letters and their counts and add the typed letter to the array
                 let typedLetters = [];
                 inputs.forEach((input) => {
                     if (input.value) {
-                        typedLetters.push(input.value); // Add the typed letter to the array
+                        typedLetters.push(input.value);
                     }
                 });
 
@@ -138,24 +164,26 @@
                             updatedText += `<span style="color: #57a65b">${letter}</span>`;
                             letterCount[letter]++;
                         } else {
-                            updatedText += `<span style="color: #919191">${letter}</span>`;
+                            updatedText += `<span>${letter}</span>`;
                         }
                     } else {
-                        updatedText += `<span style="color: #919191">${letter}</span>`;
+                        updatedText += `<span>${letter}</span>`;
                     }
                 }
 
                 // Update the displayed anagram
-                anagramDiv.innerHTML = "anagram: " + updatedText;
+                anagramDiv.innerHTML = "anagram (" + index + "/"  + length + "): " + updatedText;
 
                 // Update input box colors based on correct or incorrect letters
                 inputs.forEach((input, index) => {
                     let letter = anagramText[index];
                     let inputValue = input.value;
 
+                    // if correct letter and easy mode, turn input background green
                     if (inputValue && inputValue === letter) {
-                        // Correct letter, turn input background green
-                        input.classList.add("correct");
+                        if (!hardMode) {
+                            input.classList.add("correct");
+                        }
                         input.classList.remove("incorrect");
                     } else if (inputValue && !anagramText.includes(inputValue)) {
                         // Incorrect letter (not in the anagram), turn input background red
