@@ -8,10 +8,13 @@
     </head>
     <body>
         <h1>Bahnanagrams</h1>
+
+        <!-- Anagram display -->
         <div class="scrambled-word" id="scrambled-word">
             anagram: {{ anagram }}
         </div>
 
+        <!-- Form for letter input and navigation buttons -->
         <form method="POST" action="/{{ index }}">
             {% for i in range(anagram|length) %}
             <input
@@ -21,9 +24,15 @@
                 maxlength="1"
                 oninput="moveFocus(this); updateAnagramColors()"
                 onkeydown="handleBackspace(event, this); handleEnter(event)"
-                {% if success %} disabled {% endif %}
-                value="{{ request.form['letter_' ~ loop.index0] if request.form['letter_' ~ loop.index0] else '' }}"
-            />
+{#                <!-- Automatically populate the correct letter when solved -->#}
+{#                <!-- Keep user input if not solved -->#}
+                {% if success %}
+                    disabled
+                    value="{{ anagram[i] }}"
+                {% else %}
+                    value="{{ request.form['letter_' ~ loop.index0] if request.form['letter_' ~ loop.index0] else '' }}"
+                {% endif %}
+            >
             {% endfor %}
             <br />
             <br />
@@ -40,20 +49,22 @@
             </button>
         </form>
 
-        {# confetti and message if success #}
-        {% if success %}
-        <p class="success-message">🍌🚂 You solved this Bahnanagram! 🚂🍌</p>
-        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-        <script>
-            // Trigger confetti after success
-            confetti({
-                particleCount: 200,
-                spread: 70,
-                origin: { y: 0.6 },
-            });
-        </script>
-        {% endif %}
+        <div id="success-container" style="height: 40px;">
+            {% if success %}
+                <p class="success-message">🍌🚂 You solved this Bahnanagram! 🚂🍌</p>
+                <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+                <script>
+                    // Trigger confetti after success
+                    confetti({
+                        particleCount: 200,
+                        spread: 70,
+                        origin: { y: 0.6 },
+                    });
+                </script>
+            {% endif %}
+        </div>
 
+        <!-- JavaScript functions -->
         <script>
             // Move focus to the next input after a letter is entered
             function moveFocus(currentInput) {
@@ -79,7 +90,14 @@
                 }
             }
 
-            // update anagram and text colors when corret or wrong letters typed
+            // update anagram and text colors when correct or wrong letters are typed
+            const success = {{ success | tojson }};
+            console.log("Success Flag:", success);  // Debugging to check if it's correctly passed
+            window.onload = function() {
+                // Call this function after page load to ensure it's applied after form re-render
+                updateAnagramColors();
+            }
+
             function updateAnagramColors() {
                 const inputs = document.querySelectorAll(".input-box");
                 const anagramDiv = document.getElementById("scrambled-word");
@@ -93,6 +111,13 @@
                         typedLetters.push(input.value); // Add the typed letter to the array
                     }
                 });
+
+                // If the puzzle is solved, turn all input boxes green
+                if (success) {
+                    inputs.forEach((input) => {
+                        input.classList.add("correct");
+                    });
+                }
 
                 // Create an array to track how many times each letter in the anagram has been turned green
                 let letterCount = {};
@@ -123,14 +148,14 @@
                 // Update the displayed anagram
                 anagramDiv.innerHTML = "anagram: " + updatedText;
 
-                // Update input box colors
+                // Update input box colors based on correct or incorrect letters
                 inputs.forEach((input, index) => {
                     let letter = anagramText[index];
                     let inputValue = input.value;
 
                     if (inputValue && inputValue === letter) {
                         // Correct letter, turn input background green
-                        {#input.classList.add("correct");#}
+                        input.classList.add("correct");
                         input.classList.remove("incorrect");
                     } else if (inputValue && !anagramText.includes(inputValue)) {
                         // Incorrect letter (not in the anagram), turn input background red
@@ -142,6 +167,7 @@
                     }
                 });
             }
+
         </script>
     </body>
 </html>

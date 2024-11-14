@@ -1,5 +1,6 @@
 import re
 from functools import lru_cache
+from io import StringIO
 
 import pandas as pd
 import requests
@@ -29,7 +30,7 @@ response = requests.get(url)
 response.raise_for_status()
 soup = BeautifulSoup(response.content, "html.parser")
 table = soup.find_all("table", {"class": "wikitable"})
-df = pd.read_html(str(table[1]))[0]
+df = pd.read_html(StringIO(str(table[1])))[0]
 pattern = r"^(.*?)\s\((.*?)\)\s+(\d+°\s\d+′\s\d+″\s[NS]),\s+(\d+°\s\d+′\s\d+″\s[EO])$"
 
 

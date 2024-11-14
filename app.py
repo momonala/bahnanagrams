@@ -12,6 +12,7 @@ app = Flask(__name__)
 # Drop missing station names and shuffle
 df = df.dropna(subset=['Station'])
 anagrams = df.sample(frac=1).reset_index(drop=True)
+solved = []
 
 
 @app.route("/<int:index>", methods=["GET", "POST"])
@@ -24,7 +25,11 @@ def anagram_page(index):
     if request.method == "POST":
         user_input = ''.join([request.form.get(f"letter_{i}", "") for i in range(len(word))]).lower()
         if user_input == word.lower():
+            solved.append(index)
             return render_template("index.html", anagram=anagram, success=True, index=index, length=len(anagrams))
+
+    if index in solved:
+        return render_template("index.html", anagram=anagram, success=True, index=index, length=len(anagrams))
 
     return render_template("index.html", anagram=anagram, success=False, index=index, length=len(anagrams))
 
